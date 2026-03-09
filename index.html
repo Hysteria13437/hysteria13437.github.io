@@ -253,6 +253,10 @@
   .status-paid      { color: var(--olive); }
   .status-incoming  { color: var(--stamp-blue); }
   .status-cancelled { color: var(--ink-faded); text-decoration: line-through; }
+  .status-sold      { color: var(--olive); }
+  .status-outgoing  { color: var(--stamp-blue); }
+  .status-pending   { color: var(--red); }
+  .status-listed    { color: var(--ink-faded); }
 
   .deal-item.is-cancelled .deal-name,
   .deal-item.is-cancelled .deal-price {
@@ -392,7 +396,8 @@
     <section class="deals-section">
       <div class="deals-header">
         <span class="col-label col-item">Item</span>
-        <span class="col-label col-price">Sold for</span>
+        <span class="col-label col-status">Status</span>
+        <span class="col-label col-price">Price</span>
       </div>
       <ul class="deals-list" id="soldList"></ul>
       <div class="empty" id="soldEmpty">no sales logged yet</div>
@@ -416,14 +421,12 @@
   document.getElementById('stampYear').textContent = new Date().getFullYear();
 
   const STATUS_CLASS = {
-    'paid': 'status-paid',
-    'incoming': 'status-incoming',
-    'cancelled': 'status-cancelled'
+    'paid': 'status-paid', 'incoming': 'status-incoming', 'cancelled': 'status-cancelled',
+    'sold': 'status-sold', 'outgoing': 'status-outgoing', 'pending': 'status-pending', 'listed': 'status-listed'
   };
   const STATUS_LABEL = {
-    'paid': 'Paid',
-    'incoming': 'Incoming',
-    'cancelled': 'Cancelled'
+    'paid': 'Paid', 'incoming': 'Incoming', 'cancelled': 'Cancelled',
+    'sold': 'Sold', 'outgoing': 'Outgoing', 'pending': 'Pending', 'listed': 'Listed'
   };
 
   function formatPrice(n) { return '€' + Number(n).toFixed(2); }
@@ -446,10 +449,11 @@
       document.getElementById('totalAmount').textContent = formatPrice(total);
       document.getElementById('totalCount').textContent = active.length + (active.length === 1 ? ' item' : ' items');
     } else {
-      const total = soldData.reduce((s, d) => s + Number(d.price), 0);
+      const completed = soldData.filter(d => d.status === 'sold' || d.status === 'outgoing');
+      const total = completed.reduce((s, d) => s + Number(d.price), 0);
       document.getElementById('totalLabel').textContent = 'Total Earned';
       document.getElementById('totalAmount').textContent = formatPrice(total);
-      document.getElementById('totalCount').textContent = soldData.length + (soldData.length === 1 ? ' item' : ' items');
+      document.getElementById('totalCount').textContent = completed.length + (completed.length === 1 ? ' item' : ' items');
     }
   }
 
@@ -483,13 +487,15 @@
     list.innerHTML = '';
     empty.style.display = sold.length === 0 ? 'block' : 'none';
     [...sold].reverse().forEach(item => {
+      const status = item.status || 'sold';
       const li = document.createElement('li');
-      li.className = 'deal-item';
+      li.className = 'deal-item' + (status === 'listed' ? ' is-cancelled' : '');
       li.innerHTML = `
         <div class="deal-name-wrap">
           <div class="deal-name">${escHtml(item.name)}</div>
           ${item.date ? `<div class="deal-date">${formatDate(item.date)}</div>` : ''}
         </div>
+        <span class="status-badge ${STATUS_CLASS[status] || 'status-sold'}">${STATUS_LABEL[status] || status}</span>
         <span class="deal-price">${formatPrice(item.price)}</span>
       `;
       list.appendChild(li);
