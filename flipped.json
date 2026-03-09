@@ -4,5 +4,6 @@
   { "name": "Intel Core 2 Duo E7300 CPU", "bought": 0, "sold": 3 },
   { "name": "FSP 300W 20-pin ATX PSU", "bought": 0, "sold": 5 },
   { "name": "2x DDR2 1GB Kingston KVR667D2N5/1G", "bought": 0, "sold": 3 },
-  { "name": "JBL Tune 700BT Wireless Headphones", "bought": 0, "sold": 20 }
+  { "name": "JBL Tune 700BT Wireless Headphones", "bought": 0, "sold": 20 },
+  { "name": "Fujitsu D2778 + Intel Xeon W3550 + 8GB ECC RAM + Cooler", "bought": 3, "sold": 20 }
 ]
