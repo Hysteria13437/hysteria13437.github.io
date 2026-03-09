@@ -145,6 +145,40 @@
     color: var(--stamp-blue);
   }
 
+  /* TABS */
+  .tab-bar {
+    display: flex;
+    border-bottom: 2px solid var(--ink);
+    position: relative;
+    z-index: 1;
+    padding-left: 88px;
+  }
+
+  .tab-btn {
+    background: none;
+    border: none;
+    border-bottom: 3px solid transparent;
+    margin-bottom: -2px;
+    padding: 14px 24px 12px;
+    font-family: 'Courier Prime', monospace;
+    font-size: 10px;
+    letter-spacing: 0.25em;
+    text-transform: uppercase;
+    color: var(--ink-faded);
+    cursor: pointer;
+    transition: color 0.15s, border-color 0.15s;
+  }
+
+  .tab-btn:hover { color: var(--ink); }
+
+  .tab-btn.active {
+    color: var(--ink);
+    border-bottom-color: var(--red);
+  }
+
+  .tab-panel { display: none; }
+  .tab-panel.active { display: block; }
+
   .deals-section {
     padding: 0 40px 40px 88px;
     position: relative;
@@ -313,6 +347,7 @@
 
   @media (max-width: 520px) {
     header, .form-section, .deals-section, .total-bar { padding-left: 24px; }
+    .tab-bar { padding-left: 24px; }
     .page::before { left: 16px; }
     .form-row { grid-template-columns: 1fr; }
     .price-input input { width: 100%; }
@@ -336,23 +371,41 @@
     </div>
   </header>
 
-  <section class="deals-section">
-    <div class="deals-header">
-      <span class="col-label col-item">Item</span>
-      <span class="col-label col-status">Status</span>
-      <span class="col-label col-price">Paid</span>
-    </div>
-    <ul class="deals-list" id="dealsList"></ul>
-    <div class="empty" id="emptyState">no deals logged yet</div>
-  </section>
+  <div class="tab-bar">
+    <button class="tab-btn active" data-tab="acquired">Acquired</button>
+    <button class="tab-btn" data-tab="sold">Sold</button>
+  </div>
+
+  <div class="tab-panel active" id="tab-acquired">
+    <section class="deals-section">
+      <div class="deals-header">
+        <span class="col-label col-item">Item</span>
+        <span class="col-label col-status">Status</span>
+        <span class="col-label col-price">Paid</span>
+      </div>
+      <ul class="deals-list" id="dealsList"></ul>
+      <div class="empty" id="dealsEmpty">no deals logged yet</div>
+    </section>
+  </div>
+
+  <div class="tab-panel" id="tab-sold">
+    <section class="deals-section">
+      <div class="deals-header">
+        <span class="col-label col-item">Item</span>
+        <span class="col-label col-price">Sold for</span>
+      </div>
+      <ul class="deals-list" id="soldList"></ul>
+      <div class="empty" id="soldEmpty">no sales logged yet</div>
+    </section>
+  </div>
 
   <div class="total-bar">
     <div>
-      <div class="total-label">Total Spent</div>
+      <div class="total-label" id="totalLabel">Total Spent</div>
       <div class="total-count" id="totalCount">0 items</div>
     </div>
     <div class="total-right">
-      <div class="total-amount" id="totalAmount">$0.00</div>
+      <div class="total-amount" id="totalAmount">€0.00</div>
     </div>
   </div>
 
@@ -373,8 +426,6 @@
     'cancelled': 'Cancelled'
   };
 
-  let deals = JSON.parse(localStorage.getItem('shs-deals') || '[]');
-
   function formatPrice(n) { return '€' + Number(n).toFixed(2); }
   function formatDate(iso) {
     return new Date(iso).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
@@ -383,12 +434,31 @@
     return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
   }
 
-  function render(deals) {
+  let activeTab = 'acquired';
+  let dealsData = [];
+  let soldData = [];
+
+  function updateTotal() {
+    if (activeTab === 'acquired') {
+      const active = dealsData.filter(d => d.status !== 'cancelled');
+      const total = active.reduce((s, d) => s + Number(d.price), 0);
+      document.getElementById('totalLabel').textContent = 'Total Spent';
+      document.getElementById('totalAmount').textContent = formatPrice(total);
+      document.getElementById('totalCount').textContent = active.length + (active.length === 1 ? ' item' : ' items');
+    } else {
+      const total = soldData.reduce((s, d) => s + Number(d.price), 0);
+      document.getElementById('totalLabel').textContent = 'Total Earned';
+      document.getElementById('totalAmount').textContent = formatPrice(total);
+      document.getElementById('totalCount').textContent = soldData.length + (soldData.length === 1 ? ' item' : ' items');
+    }
+  }
+
+  function renderDeals(deals) {
+    dealsData = deals;
     const list = document.getElementById('dealsList');
-    const empty = document.getElementById('emptyState');
+    const empty = document.getElementById('dealsEmpty');
     list.innerHTML = '';
     empty.style.display = deals.length === 0 ? 'block' : 'none';
-
     [...deals].reverse().forEach(deal => {
       const status = deal.status || 'paid';
       const li = document.createElement('li');
@@ -403,17 +473,49 @@
       `;
       list.appendChild(li);
     });
-
-    const active = deals.filter(d => d.status !== 'cancelled');
-    const total = active.reduce((s, d) => s + Number(d.price), 0);
-    document.getElementById('totalAmount').textContent = formatPrice(total);
-    document.getElementById('totalCount').textContent = active.length + (active.length === 1 ? ' item' : ' items');
+    updateTotal();
   }
 
-  fetch('deals.json')
-    .then(r => r.json())
-    .then(render)
-    .catch(() => render([]));
+  function renderSold(sold) {
+    soldData = sold;
+    const list = document.getElementById('soldList');
+    const empty = document.getElementById('soldEmpty');
+    list.innerHTML = '';
+    empty.style.display = sold.length === 0 ? 'block' : 'none';
+    [...sold].reverse().forEach(item => {
+      const li = document.createElement('li');
+      li.className = 'deal-item';
+      li.innerHTML = `
+        <div class="deal-name-wrap">
+          <div class="deal-name">${escHtml(item.name)}</div>
+          ${item.date ? `<div class="deal-date">${formatDate(item.date)}</div>` : ''}
+        </div>
+        <span class="deal-price">${formatPrice(item.price)}</span>
+      `;
+      list.appendChild(li);
+    });
+    updateTotal();
+  }
+
+  // Tab switching
+  document.querySelectorAll('.tab-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+      document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+      btn.classList.add('active');
+      document.getElementById('tab-' + btn.dataset.tab).classList.add('active');
+      activeTab = btn.dataset.tab;
+      updateTotal();
+    });
+  });
+
+  Promise.all([
+    fetch('deals.json').then(r => r.json()).catch(() => []),
+    fetch('sold.json').then(r => r.json()).catch(() => [])
+  ]).then(([deals, sold]) => {
+    renderDeals(deals);
+    renderSold(sold);
+  });
 </script>
 </body>
 </html>
