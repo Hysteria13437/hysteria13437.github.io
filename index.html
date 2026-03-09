@@ -145,100 +145,6 @@
     color: var(--stamp-blue);
   }
 
-  .form-section {
-    padding: 32px 40px 32px 88px;
-    border-bottom: 2px solid var(--ink);
-    position: relative;
-    z-index: 1;
-  }
-
-  .form-label {
-    font-family: 'Courier Prime', monospace;
-    font-size: 10px;
-    letter-spacing: 0.25em;
-    text-transform: uppercase;
-    color: var(--ink-faded);
-    display: block;
-    margin-bottom: 16px;
-  }
-
-  .form-row {
-    display: grid;
-    grid-template-columns: 1fr auto auto;
-    gap: 12px;
-    align-items: end;
-  }
-
-  .field {
-    display: flex;
-    flex-direction: column;
-    gap: 6px;
-  }
-
-  .field label {
-    font-family: 'Courier Prime', monospace;
-    font-size: 9px;
-    letter-spacing: 0.2em;
-    text-transform: uppercase;
-    color: var(--ink-faded);
-  }
-
-  input, select {
-    background: transparent;
-    border: none;
-    border-bottom: 1.5px solid var(--ink-light);
-    padding: 6px 4px;
-    font-family: 'Courier Prime', monospace;
-    font-size: 15px;
-    color: var(--ink);
-    outline: none;
-    width: 100%;
-    transition: border-color 0.2s;
-  }
-
-  input::placeholder { color: var(--rule); }
-  input:focus, select:focus { border-bottom-color: var(--red); }
-
-  select {
-    cursor: pointer;
-    -webkit-appearance: none;
-    appearance: none;
-    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%234A3728'/%3E%3C/svg%3E");
-    background-repeat: no-repeat;
-    background-position: right 4px center;
-    padding-right: 20px;
-    min-width: 120px;
-  }
-
-  .price-input { position: relative; }
-  .price-input::before {
-    content: '$';
-    position: absolute;
-    left: 4px;
-    bottom: 7px;
-    font-family: 'Courier Prime', monospace;
-    font-size: 15px;
-    color: var(--ink-faded);
-  }
-  .price-input input { padding-left: 16px; width: 100px; }
-
-  .add-btn {
-    background: var(--ink);
-    color: var(--paper);
-    border: none;
-    padding: 8px 20px;
-    font-family: 'Special Elite', monospace;
-    font-size: 13px;
-    letter-spacing: 0.05em;
-    cursor: pointer;
-    transition: background 0.15s, transform 0.1s;
-    white-space: nowrap;
-    align-self: end;
-    margin-bottom: 1px;
-  }
-  .add-btn:hover { background: var(--red); }
-  .add-btn:active { transform: scale(0.97); }
-
   .deals-section {
     padding: 0 40px 40px 88px;
     position: relative;
@@ -265,7 +171,6 @@
   .col-item { flex: 1; }
   .col-cond { width: 110px; text-align: center; }
   .col-price { width: 80px; text-align: right; }
-  .col-del { width: 28px; }
 
   .deals-list { list-style: none; }
 
@@ -428,39 +333,11 @@
     </div>
   </header>
 
-  <section class="form-section">
-    <span class="form-label">// Log a new acquisition</span>
-    <div class="form-row">
-      <div class="field">
-        <label>Item</label>
-        <input type="text" id="itemName" placeholder="e.g. ThinkPad X220">
-      </div>
-      <div class="field">
-        <label>Condition</label>
-        <select id="condition">
-          <option value="New">New</option>
-          <option value="Like New">Like New</option>
-          <option value="Good" selected>Good</option>
-          <option value="Fair">Fair</option>
-          <option value="Poor">Poor</option>
-        </select>
-      </div>
-      <div class="field">
-        <label>Paid</label>
-        <div class="price-input">
-          <input type="number" id="price" placeholder="0.00" min="0" step="0.01">
-        </div>
-      </div>
-      <button class="add-btn" onclick="addDeal()">+ Log It</button>
-    </div>
-  </section>
-
   <section class="deals-section">
     <div class="deals-header">
       <span class="col-label col-item">Item</span>
       <span class="col-label col-cond">Condition</span>
       <span class="col-label col-price">Paid</span>
-      <span class="col-del"></span>
     </div>
     <ul class="deals-list" id="dealsList"></ul>
     <div class="empty" id="emptyState">no deals logged yet</div>
@@ -492,8 +369,7 @@
 
   let deals = JSON.parse(localStorage.getItem('shs-deals') || '[]');
 
-  function save() { localStorage.setItem('shs-deals', JSON.stringify(deals)); }
-  function formatPrice(n) { return '$' + Number(n).toFixed(2); }
+  function formatPrice(n) { return '€' + Number(n).toFixed(2); }
   function formatDate(iso) {
     return new Date(iso).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
   }
@@ -501,14 +377,13 @@
     return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
   }
 
-  function render() {
+  function render(deals) {
     const list = document.getElementById('dealsList');
     const empty = document.getElementById('emptyState');
     list.innerHTML = '';
     empty.style.display = deals.length === 0 ? 'block' : 'none';
 
-    [...deals].reverse().forEach((deal, revIdx) => {
-      const idx = deals.length - 1 - revIdx;
+    [...deals].reverse().forEach(deal => {
       const li = document.createElement('li');
       li.className = 'deal-item';
       li.innerHTML = `
@@ -518,7 +393,6 @@
         </div>
         <span class="condition-badge ${COND_CLASS[deal.condition] || 'cond-good'}">${escHtml(deal.condition)}</span>
         <span class="deal-price">${formatPrice(deal.price)}</span>
-        <button class="del-btn" onclick="removeDeal(${idx})" title="Remove">&times;</button>
       `;
       list.appendChild(li);
     });
@@ -528,25 +402,10 @@
     document.getElementById('totalCount').textContent = deals.length + (deals.length === 1 ? ' item' : ' items');
   }
 
-  function addDeal() {
-    const name = document.getElementById('itemName').value.trim();
-    const condition = document.getElementById('condition').value;
-    const price = parseFloat(document.getElementById('price').value) || 0;
-    if (!name) { document.getElementById('itemName').focus(); return; }
-    deals.push({ name, condition, price, date: new Date().toISOString() });
-    save(); render();
-    document.getElementById('itemName').value = '';
-    document.getElementById('price').value = '';
-    document.getElementById('itemName').focus();
-  }
-
-  function removeDeal(idx) { deals.splice(idx, 1); save(); render(); }
-
-  document.getElementById('itemName').addEventListener('keydown', e => { if (e.key === 'Enter') document.getElementById('condition').focus(); });
-  document.getElementById('condition').addEventListener('keydown', e => { if (e.key === 'Enter') document.getElementById('price').focus(); });
-  document.getElementById('price').addEventListener('keydown', e => { if (e.key === 'Enter') addDeal(); });
-
-  render();
+  fetch('deals.json')
+    .then(r => r.json())
+    .then(render)
+    .catch(() => render([]));
 </script>
 </body>
 </html>
