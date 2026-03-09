@@ -169,7 +169,7 @@
   }
 
   .col-item { flex: 1; }
-  .col-cond { width: 110px; text-align: center; }
+  .col-status { width: 90px; text-align: center; }
   .col-price { width: 80px; text-align: right; }
 
   .deals-list { list-style: none; }
@@ -204,23 +204,26 @@
     margin-top: 2px;
   }
 
-  .condition-badge {
-    width: 110px;
+  .status-badge {
+    width: 90px;
     text-align: center;
     font-family: 'Courier Prime', monospace;
     font-size: 9px;
-    letter-spacing: 0.15em;
+    letter-spacing: 0.12em;
     text-transform: uppercase;
     padding: 3px 8px;
     border: 1px solid currentColor;
     white-space: nowrap;
   }
 
-  .cond-new     { color: var(--olive); }
-  .cond-likenew { color: var(--stamp-blue); }
-  .cond-good    { color: var(--ink-light); }
-  .cond-fair    { color: var(--ink-faded); }
-  .cond-poor    { color: var(--red); }
+  .status-paid      { color: var(--olive); }
+  .status-incoming  { color: var(--stamp-blue); }
+  .status-cancelled { color: var(--ink-faded); text-decoration: line-through; }
+
+  .deal-item.is-cancelled .deal-name,
+  .deal-item.is-cancelled .deal-price {
+    opacity: 0.4;
+  }
 
   .deal-price {
     width: 80px;
@@ -314,8 +317,8 @@
     .form-row { grid-template-columns: 1fr; }
     .price-input input { width: 100%; }
     .stamp { display: none; }
-    .col-cond { width: 80px; }
-    .condition-badge { width: 80px; font-size: 8px; padding: 2px 4px; }
+    .col-status { width: 72px; }
+    .status-badge { width: 72px; font-size: 8px; padding: 2px 4px; }
   }
 </style>
 </head>
@@ -336,7 +339,7 @@
   <section class="deals-section">
     <div class="deals-header">
       <span class="col-label col-item">Item</span>
-      <span class="col-label col-cond">Condition</span>
+      <span class="col-label col-status">Status</span>
       <span class="col-label col-price">Paid</span>
     </div>
     <ul class="deals-list" id="dealsList"></ul>
@@ -359,12 +362,15 @@
 <script>
   document.getElementById('stampYear').textContent = new Date().getFullYear();
 
-  const COND_CLASS = {
-    'New': 'cond-new',
-    'Like New': 'cond-likenew',
-    'Good': 'cond-good',
-    'Fair': 'cond-fair',
-    'Poor': 'cond-poor'
+  const STATUS_CLASS = {
+    'paid': 'status-paid',
+    'incoming': 'status-incoming',
+    'cancelled': 'status-cancelled'
+  };
+  const STATUS_LABEL = {
+    'paid': 'Paid',
+    'incoming': 'Incoming',
+    'cancelled': 'Cancelled'
   };
 
   let deals = JSON.parse(localStorage.getItem('shs-deals') || '[]');
@@ -384,22 +390,24 @@
     empty.style.display = deals.length === 0 ? 'block' : 'none';
 
     [...deals].reverse().forEach(deal => {
+      const status = deal.status || 'paid';
       const li = document.createElement('li');
-      li.className = 'deal-item';
+      li.className = 'deal-item' + (status === 'cancelled' ? ' is-cancelled' : '');
       li.innerHTML = `
         <div class="deal-name-wrap">
           <div class="deal-name">${escHtml(deal.name)}</div>
-          <div class="deal-date">${formatDate(deal.date)}</div>
+          ${deal.date ? `<div class="deal-date">${formatDate(deal.date)}</div>` : ''}
         </div>
-        <span class="condition-badge ${COND_CLASS[deal.condition] || 'cond-good'}">${escHtml(deal.condition)}</span>
+        <span class="status-badge ${STATUS_CLASS[status] || 'status-paid'}">${STATUS_LABEL[status] || status}</span>
         <span class="deal-price">${formatPrice(deal.price)}</span>
       `;
       list.appendChild(li);
     });
 
-    const total = deals.reduce((s, d) => s + Number(d.price), 0);
+    const active = deals.filter(d => d.status !== 'cancelled');
+    const total = active.reduce((s, d) => s + Number(d.price), 0);
     document.getElementById('totalAmount').textContent = formatPrice(total);
-    document.getElementById('totalCount').textContent = deals.length + (deals.length === 1 ? ' item' : ' items');
+    document.getElementById('totalCount').textContent = active.length + (active.length === 1 ? ' item' : ' items');
   }
 
   fetch('deals.json')
