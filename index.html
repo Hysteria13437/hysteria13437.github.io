@@ -1,7 +1,552 @@
-  <!DOCTYPE html> 
-  <html>
-  <head><title>secondhand-silicon</title></head>
-  <body>
-  <h1>Coming soon</h1>
-  </body>
-  </html>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Secondhand Silicon — Deal Log</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Special+Elite&family=Playfair+Display:wght@700;900&family=Courier+Prime:wght@400;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --paper: #F2E8D5;
+    --paper-dark: #E8D9BC;
+    --ink: #1C1008;
+    --ink-light: #4A3728;
+    --ink-faded: #8C7060;
+    --red: #B83A2A;
+    --olive: #5C6B3A;
+    --stamp-blue: #2A4A6B;
+    --rule: #C8B89A;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: #2C1F14;
+    background-image:
+      repeating-linear-gradient(0deg, transparent, transparent 39px, rgba(255,255,255,0.03) 39px, rgba(255,255,255,0.03) 40px),
+      repeating-linear-gradient(90deg, transparent, transparent 39px, rgba(255,255,255,0.02) 39px, rgba(255,255,255,0.02) 40px);
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+    padding: 40px 16px 80px;
+    font-family: 'Special Elite', monospace;
+  }
+
+  .page {
+    width: 100%;
+    max-width: 720px;
+    background: var(--paper);
+    background-image:
+      url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='300' height='300' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");
+    box-shadow: 0 4px 6px rgba(0,0,0,0.3), 0 20px 60px rgba(0,0,0,0.5), inset 0 0 80px rgba(0,0,0,0.05);
+    position: relative;
+    overflow: hidden;
+  }
+
+  .page::before {
+    content: '';
+    position: absolute;
+    left: 64px;
+    top: 0;
+    bottom: 0;
+    width: 2px;
+    background: rgba(184,58,42,0.35);
+  }
+
+  .page::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background-image: repeating-linear-gradient(
+      180deg,
+      transparent,
+      transparent 31px,
+      var(--rule) 31px,
+      var(--rule) 32px
+    );
+    opacity: 0.4;
+    pointer-events: none;
+  }
+
+  header {
+    padding: 48px 40px 32px 88px;
+    border-bottom: 2px solid var(--ink);
+    position: relative;
+    z-index: 1;
+  }
+
+  .header-eyebrow {
+    font-family: 'Courier Prime', monospace;
+    font-size: 10px;
+    letter-spacing: 0.3em;
+    text-transform: uppercase;
+    color: var(--ink-faded);
+    margin-bottom: 8px;
+  }
+
+  h1 {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(32px, 6vw, 52px);
+    font-weight: 900;
+    color: var(--ink);
+    line-height: 1;
+    letter-spacing: -0.02em;
+  }
+
+  h1 span { color: var(--red); }
+
+  .header-sub {
+    font-family: 'Courier Prime', monospace;
+    font-size: 12px;
+    color: var(--ink-faded);
+    margin-top: 10px;
+    letter-spacing: 0.1em;
+  }
+
+  .stamp {
+    position: absolute;
+    top: 36px;
+    right: 36px;
+    width: 80px;
+    height: 80px;
+    border: 3px solid var(--stamp-blue);
+    border-radius: 50%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    transform: rotate(-12deg);
+    opacity: 0.6;
+    gap: 2px;
+  }
+  .stamp::before {
+    content: '';
+    position: absolute;
+    inset: 4px;
+    border: 1px solid var(--stamp-blue);
+    border-radius: 50%;
+  }
+  .stamp-text {
+    font-family: 'Courier Prime', monospace;
+    font-size: 7px;
+    font-weight: 700;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--stamp-blue);
+    text-align: center;
+    line-height: 1.3;
+  }
+  .stamp-year {
+    font-family: 'Playfair Display', serif;
+    font-size: 16px;
+    font-weight: 700;
+    color: var(--stamp-blue);
+  }
+
+  .form-section {
+    padding: 32px 40px 32px 88px;
+    border-bottom: 2px solid var(--ink);
+    position: relative;
+    z-index: 1;
+  }
+
+  .form-label {
+    font-family: 'Courier Prime', monospace;
+    font-size: 10px;
+    letter-spacing: 0.25em;
+    text-transform: uppercase;
+    color: var(--ink-faded);
+    display: block;
+    margin-bottom: 16px;
+  }
+
+  .form-row {
+    display: grid;
+    grid-template-columns: 1fr auto auto;
+    gap: 12px;
+    align-items: end;
+  }
+
+  .field {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+
+  .field label {
+    font-family: 'Courier Prime', monospace;
+    font-size: 9px;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--ink-faded);
+  }
+
+  input, select {
+    background: transparent;
+    border: none;
+    border-bottom: 1.5px solid var(--ink-light);
+    padding: 6px 4px;
+    font-family: 'Courier Prime', monospace;
+    font-size: 15px;
+    color: var(--ink);
+    outline: none;
+    width: 100%;
+    transition: border-color 0.2s;
+  }
+
+  input::placeholder { color: var(--rule); }
+  input:focus, select:focus { border-bottom-color: var(--red); }
+
+  select {
+    cursor: pointer;
+    -webkit-appearance: none;
+    appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%234A3728'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 4px center;
+    padding-right: 20px;
+    min-width: 120px;
+  }
+
+  .price-input { position: relative; }
+  .price-input::before {
+    content: '$';
+    position: absolute;
+    left: 4px;
+    bottom: 7px;
+    font-family: 'Courier Prime', monospace;
+    font-size: 15px;
+    color: var(--ink-faded);
+  }
+  .price-input input { padding-left: 16px; width: 100px; }
+
+  .add-btn {
+    background: var(--ink);
+    color: var(--paper);
+    border: none;
+    padding: 8px 20px;
+    font-family: 'Special Elite', monospace;
+    font-size: 13px;
+    letter-spacing: 0.05em;
+    cursor: pointer;
+    transition: background 0.15s, transform 0.1s;
+    white-space: nowrap;
+    align-self: end;
+    margin-bottom: 1px;
+  }
+  .add-btn:hover { background: var(--red); }
+  .add-btn:active { transform: scale(0.97); }
+
+  .deals-section {
+    padding: 0 40px 40px 88px;
+    position: relative;
+    z-index: 1;
+    min-height: 200px;
+  }
+
+  .deals-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    padding: 20px 0 8px;
+    border-bottom: 1px solid var(--rule);
+  }
+
+  .col-label {
+    font-family: 'Courier Prime', monospace;
+    font-size: 9px;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--ink-faded);
+  }
+
+  .col-item { flex: 1; }
+  .col-cond { width: 110px; text-align: center; }
+  .col-price { width: 80px; text-align: right; }
+  .col-del { width: 28px; }
+
+  .deals-list { list-style: none; }
+
+  .deal-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 11px 0;
+    border-bottom: 1px solid var(--rule);
+    animation: slideIn 0.25s ease;
+    gap: 8px;
+  }
+
+  @keyframes slideIn {
+    from { opacity: 0; transform: translateX(-12px); }
+    to   { opacity: 1; transform: translateX(0); }
+  }
+
+  .deal-name-wrap { flex: 1; overflow: hidden; }
+  .deal-name {
+    font-size: 15px;
+    color: var(--ink);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .deal-date {
+    font-family: 'Courier Prime', monospace;
+    font-size: 10px;
+    color: var(--ink-faded);
+    margin-top: 2px;
+  }
+
+  .condition-badge {
+    width: 110px;
+    text-align: center;
+    font-family: 'Courier Prime', monospace;
+    font-size: 9px;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    padding: 3px 8px;
+    border: 1px solid currentColor;
+    white-space: nowrap;
+  }
+
+  .cond-new     { color: var(--olive); }
+  .cond-likenew { color: var(--stamp-blue); }
+  .cond-good    { color: var(--ink-light); }
+  .cond-fair    { color: var(--ink-faded); }
+  .cond-poor    { color: var(--red); }
+
+  .deal-price {
+    width: 80px;
+    text-align: right;
+    font-family: 'Courier Prime', monospace;
+    font-size: 15px;
+    font-weight: 700;
+    color: var(--ink);
+  }
+
+  .del-btn {
+    width: 28px;
+    height: 28px;
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: var(--rule);
+    font-size: 18px;
+    line-height: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: color 0.15s;
+    padding: 0;
+    flex-shrink: 0;
+  }
+  .del-btn:hover { color: var(--red); }
+
+  .empty {
+    padding: 48px 0;
+    text-align: center;
+    color: var(--ink-faded);
+    font-family: 'Courier Prime', monospace;
+    font-size: 12px;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+  }
+
+  .total-bar {
+    padding: 20px 40px 20px 88px;
+    border-top: 2px solid var(--ink);
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    position: relative;
+    z-index: 1;
+  }
+
+  .total-label {
+    font-family: 'Courier Prime', monospace;
+    font-size: 10px;
+    letter-spacing: 0.3em;
+    text-transform: uppercase;
+    color: var(--ink-faded);
+  }
+
+  .total-count {
+    font-family: 'Courier Prime', monospace;
+    font-size: 12px;
+    color: var(--ink-faded);
+  }
+
+  .total-amount {
+    font-family: 'Playfair Display', serif;
+    font-size: 28px;
+    font-weight: 700;
+    color: var(--ink);
+    letter-spacing: -0.02em;
+  }
+
+  .total-right {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 2px;
+  }
+
+  .perforation {
+    height: 20px;
+    background-image: radial-gradient(circle, #2C1F14 5px, transparent 5px);
+    background-size: 20px 20px;
+    background-position: -10px center;
+    margin-top: -1px;
+    position: relative;
+    z-index: 2;
+  }
+
+  @media (max-width: 520px) {
+    header, .form-section, .deals-section, .total-bar { padding-left: 24px; }
+    .page::before { left: 16px; }
+    .form-row { grid-template-columns: 1fr; }
+    .price-input input { width: 100%; }
+    .stamp { display: none; }
+    .col-cond { width: 80px; }
+    .condition-badge { width: 80px; font-size: 8px; padding: 2px 4px; }
+  }
+</style>
+</head>
+<body>
+<div class="page">
+
+  <header>
+    <div class="header-eyebrow">Personal Inventory Log</div>
+    <h1>Secondhand<br><span>Silicon</span></h1>
+    <div class="header-sub">// deals acquired &amp; documented</div>
+    <div class="stamp">
+      <div class="stamp-text">EST.</div>
+      <div class="stamp-year" id="stampYear"></div>
+      <div class="stamp-text">VERIFIED</div>
+    </div>
+  </header>
+
+  <section class="form-section">
+    <span class="form-label">// Log a new acquisition</span>
+    <div class="form-row">
+      <div class="field">
+        <label>Item</label>
+        <input type="text" id="itemName" placeholder="e.g. ThinkPad X220">
+      </div>
+      <div class="field">
+        <label>Condition</label>
+        <select id="condition">
+          <option value="New">New</option>
+          <option value="Like New">Like New</option>
+          <option value="Good" selected>Good</option>
+          <option value="Fair">Fair</option>
+          <option value="Poor">Poor</option>
+        </select>
+      </div>
+      <div class="field">
+        <label>Paid</label>
+        <div class="price-input">
+          <input type="number" id="price" placeholder="0.00" min="0" step="0.01">
+        </div>
+      </div>
+      <button class="add-btn" onclick="addDeal()">+ Log It</button>
+    </div>
+  </section>
+
+  <section class="deals-section">
+    <div class="deals-header">
+      <span class="col-label col-item">Item</span>
+      <span class="col-label col-cond">Condition</span>
+      <span class="col-label col-price">Paid</span>
+      <span class="col-del"></span>
+    </div>
+    <ul class="deals-list" id="dealsList"></ul>
+    <div class="empty" id="emptyState">no deals logged yet</div>
+  </section>
+
+  <div class="total-bar">
+    <div>
+      <div class="total-label">Total Spent</div>
+      <div class="total-count" id="totalCount">0 items</div>
+    </div>
+    <div class="total-right">
+      <div class="total-amount" id="totalAmount">$0.00</div>
+    </div>
+  </div>
+
+  <div class="perforation"></div>
+</div>
+
+<script>
+  document.getElementById('stampYear').textContent = new Date().getFullYear();
+
+  const COND_CLASS = {
+    'New': 'cond-new',
+    'Like New': 'cond-likenew',
+    'Good': 'cond-good',
+    'Fair': 'cond-fair',
+    'Poor': 'cond-poor'
+  };
+
+  let deals = JSON.parse(localStorage.getItem('shs-deals') || '[]');
+
+  function save() { localStorage.setItem('shs-deals', JSON.stringify(deals)); }
+  function formatPrice(n) { return '$' + Number(n).toFixed(2); }
+  function formatDate(iso) {
+    return new Date(iso).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+  }
+  function escHtml(s) {
+    return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+  }
+
+  function render() {
+    const list = document.getElementById('dealsList');
+    const empty = document.getElementById('emptyState');
+    list.innerHTML = '';
+    empty.style.display = deals.length === 0 ? 'block' : 'none';
+
+    [...deals].reverse().forEach((deal, revIdx) => {
+      const idx = deals.length - 1 - revIdx;
+      const li = document.createElement('li');
+      li.className = 'deal-item';
+      li.innerHTML = `
+        <div class="deal-name-wrap">
+          <div class="deal-name">${escHtml(deal.name)}</div>
+          <div class="deal-date">${formatDate(deal.date)}</div>
+        </div>
+        <span class="condition-badge ${COND_CLASS[deal.condition] || 'cond-good'}">${escHtml(deal.condition)}</span>
+        <span class="deal-price">${formatPrice(deal.price)}</span>
+        <button class="del-btn" onclick="removeDeal(${idx})" title="Remove">&times;</button>
+      `;
+      list.appendChild(li);
+    });
+
+    const total = deals.reduce((s, d) => s + Number(d.price), 0);
+    document.getElementById('totalAmount').textContent = formatPrice(total);
+    document.getElementById('totalCount').textContent = deals.length + (deals.length === 1 ? ' item' : ' items');
+  }
+
+  function addDeal() {
+    const name = document.getElementById('itemName').value.trim();
+    const condition = document.getElementById('condition').value;
+    const price = parseFloat(document.getElementById('price').value) || 0;
+    if (!name) { document.getElementById('itemName').focus(); return; }
+    deals.push({ name, condition, price, date: new Date().toISOString() });
+    save(); render();
+    document.getElementById('itemName').value = '';
+    document.getElementById('price').value = '';
+    document.getElementById('itemName').focus();
+  }
+
+  function removeDeal(idx) { deals.splice(idx, 1); save(); render(); }
+
+  document.getElementById('itemName').addEventListener('keydown', e => { if (e.key === 'Enter') document.getElementById('condition').focus(); });
+  document.getElementById('condition').addEventListener('keydown', e => { if (e.key === 'Enter') document.getElementById('price').focus(); });
+  document.getElementById('price').addEventListener('keydown', e => { if (e.key === 'Enter') addDeal(); });
+
+  render();
+</script>
+</body>
+</html>
